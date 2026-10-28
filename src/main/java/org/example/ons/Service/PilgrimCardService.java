@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.example.ons.Api.ApiException;
 import org.example.ons.DTO.VerifyPilgrimDTO;
+import org.example.ons.DTO.PilgrimCardLookupDTO;
 import org.example.ons.Enum.AuthorizedStaffRole;
 import org.example.ons.Model.AuthorizedStaff;
 import org.example.ons.Model.Pilgrim;
@@ -56,25 +57,27 @@ public class PilgrimCardService {
             );
         }
 
-        if (pilgrimCard.getId() == null
-                || pilgrimCard.getId() <= 0) {
-            throw new ApiException(
-                    "A positive card ID is required"
-            );
-        }
-
-        if (pilgrimCardRepository.existsById(
-                pilgrimCard.getId()
-        )) {
-            throw new ApiException(
-                    "This card ID already exists"
-            );
-        }
+        // New cards always receive a database-generated identifier.
+        pilgrimCard.setId(null);
 
         pilgrimCard.setPilgrim(pilgrim);
 
         // Insert a new card; never merge over an existing card.
         entityManager.persist(pilgrimCard);
+    }
+
+    @Transactional(readOnly = true)
+    public PilgrimCardLookupDTO getCardForPilgrim(User user, Integer pilgrimId) {
+        requireActiveUser(user);
+        Pilgrim pilgrim = pilgrimRepository.findPilgrimById(pilgrimId);
+        if (pilgrim == null) throw new ApiException("Pilgrim not found");
+        // Check campaign ownership before revealing whether a card exists.
+        requireCampaignAccess(user, pilgrim, false);
+        PilgrimCard card = pilgrim.getPilgrimCard();
+        if (card == null) return new PilgrimCardLookupDTO(pilgrimId, false, null);
+        return new PilgrimCardLookupDTO(pilgrimId, true,
+                new PilgrimCardLookupDTO.CardDetails(card.getId(), card.getCardNumber(),
+                        card.getCardType(), card.getStatus(), card.getImageReference()));
     }
 
     public List<PilgrimCard> getAllPilgrimCards(User user) {

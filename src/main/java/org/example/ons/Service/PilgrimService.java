@@ -55,13 +55,22 @@ public class PilgrimService {
 
         requireActiveUser(user);
 
-        if (!"ADMIN".equals(user.getRole())) {
+        if ("ADMIN".equals(user.getRole())) {
+            return pilgrimRepository.findAll();
+        }
+
+        Integer campaignId;
+        if ("CAMPAIGN_OWNER".equals(user.getRole())) {
+            campaignId = getSupervisorCampaign(user).getId();
+        } else if ("AuthorizedStaff".equals(user.getRole())) {
+            campaignId = getCampaignStaff(user).getCampaign().getId();
+        } else {
             throw new AccessDeniedException(
-                    "Only admins can view all pilgrims"
+                    "Only admins and campaign members can view pilgrim lists"
             );
         }
 
-        return pilgrimRepository.findAll();
+        return pilgrimRepository.findByCampaign_Id(campaignId);
     }
 
     public Pilgrim getPilgrimById(
@@ -260,11 +269,11 @@ public class PilgrimService {
     }
 
     public PilgrimResponseDTO getPilgrimResponseById(
-            User user,
             Integer pilgrimId) {
-
-        Pilgrim pilgrim = getAccessiblePilgrim(user, pilgrimId);
-
+        Pilgrim pilgrim = pilgrimRepository.findPilgrimById(pilgrimId);
+        if (pilgrim==null){
+            throw new ApiException("pilgrim not found");
+        }
         Campaign campaign = pilgrim.getCampaign();
 
         if (campaign == null) {

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.ons.Api.ApiException;
 import org.example.ons.DTO.MergeReportsDTO;
 import org.example.ons.DTO.SelfServiceReportDTO;
+import org.example.ons.DTO.ReportTrackingDTO;
 import org.example.ons.Enum.AuthorizedStaffRole;
 import org.example.ons.Enum.ReportStatus;
 import org.example.ons.Model.*;
@@ -802,6 +803,28 @@ public class AssistanceReportService {
         }
     }
 
+
+    @Transactional(readOnly = true)
+    public ReportTrackingDTO getReportTrackingHistory(Long reportId) {
+        AssistanceReport report = getReportById(reportId);
+        List<ReportTrackingDTO.StatusChange> history = reportStatusHistoryRepository
+                .findByReport_ReportIdOrderByChangedAtDesc(reportId)
+                .stream()
+                .map(change -> new ReportTrackingDTO.StatusChange(
+                        change.getOldStatus(), change.getNewStatus(),
+                        change.getChangedAt(), change.getDurationMinutes()))
+                .toList();
+
+        String assigneeName = null;
+        if (report.getAuthorizedStaff() != null && report.getAuthorizedStaff().getUser() != null) {
+            assigneeName = report.getAuthorizedStaff().getUser().getName();
+        } else if (report.getFieldStaff() != null && report.getFieldStaff().getUser() != null) {
+            assigneeName = report.getFieldStaff().getUser().getName();
+        }
+        return new ReportTrackingDTO(
+                report.getReportId(), report.getCaseNumber(),
+                report.getStatus(), report.getCreatedAt(), assigneeName, history);
+    }
 
     @Transactional(readOnly = true)
     public AssistanceReport acceptReport(Long reportId) {

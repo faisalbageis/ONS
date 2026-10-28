@@ -31,7 +31,18 @@ public class Configuration {
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/v1/kiosks/heartbeat/all"
+
                         ).permitAll()
+
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/kiosks/get",
+                                "/api/v1/pilgrims/etPilgrimResponse/{id}",
+                                "/api/v1/reports/{reportId:\\d+}/history",
+                                "/report/{reportId:\\d+}/history"
+                        ).permitAll()
+
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -113,8 +124,6 @@ public class Configuration {
                                 "/api/v1/kiosks/update-status/{id}",
                                 "/api/v1/kiosks/update-location/{kioskId}",
                                 "/api/v1/kiosks/{kioskId}/reports",
-                                "/api/v1/kiosks/activity",
-                                "/api/v1/kiosks/report/{adminId}",
                                 "/api/v1/auth/get/all",
                                 "/api/v1/auth/get/{id}",
                                 "/api/v1/auth/activate/{id}",
@@ -125,7 +134,6 @@ public class Configuration {
                                 "/api/v1/accommodations/{accommodationId}/pilgrims",
                                 "/api/v1/accommodations/{accommodationId}/reports",
                                 "/api/v1/accommodations/{accommodationId}/location",
-                                "/api/v1/pilgrims/get",
                                 "/api/v1/pilgrim-cards/get",
                                 "/api/ai-test/qr",
                                 "/api/ai-test/ocr",
@@ -153,8 +161,12 @@ public class Configuration {
                                 HttpMethod.GET,
                                 "/api/v1/field-staff/availability",
                                 "/api/v1/pilgrims/search",
-                                "/api/v1/pilgrim-cards/me"
+                                "/api/v1/pilgrim-cards/me",
+                                "/api/v1/pilgrim-cards/pilgrim/{pilgrimId}"
                         ).hasAnyAuthority("ADMIN", "AuthorizedStaff", "CAMPAIGN_OWNER")
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/pilgrims/get")
+                        .hasAnyAuthority("ADMIN", "AuthorizedStaff", "CAMPAIGN_OWNER")
 
                         .requestMatchers("/api/v1/routes")
                         .hasAnyAuthority("ADMIN", "AuthorizedStaff", "FIELDـSTAFF","CAMPAIGN_OWNER")
@@ -174,8 +186,7 @@ public class Configuration {
                                 "/api/v1/pilgrims/{pilgrimId:\\d+}",
                                 "/api/v1/pilgrims/{pilgrimId:\\d+}/campaign",
                                 "/api/v1/pilgrims/{pilgrimId:\\d+}/accommodation",
-                                "/api/v1/pilgrims/{pilgrimId:\\d+}/reports",
-                                "/api/v1/pilgrims/etPilgrimResponse/{id}"
+                                "/api/v1/pilgrims/{pilgrimId:\\d+}/reports"
                         ).hasAnyAuthority(
                                 "ADMIN", "AuthorizedStaff", "FIELDـSTAFF", "CAMPAIGN_OWNER"
                         )

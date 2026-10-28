@@ -36,6 +36,13 @@ public class PilgrimCardController {
         );
     }
 
+    @GetMapping("/pilgrim/{pilgrimId}")
+    public ResponseEntity<?> getCardForPilgrim(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer pilgrimId) {
+        return ResponseEntity.ok(pilgrimCardService.getCardForPilgrim(user, pilgrimId));
+    }
+
     @GetMapping("/get")
     public ResponseEntity<?> getAllPilgrimCards(
             @AuthenticationPrincipal User user) {

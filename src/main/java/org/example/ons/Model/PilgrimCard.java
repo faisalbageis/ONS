@@ -15,6 +15,7 @@ import lombok.Setter;
 public class PilgrimCard {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer Id;
 
     @NotBlank(message = "Card number is required")

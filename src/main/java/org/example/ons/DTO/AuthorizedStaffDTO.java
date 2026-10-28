@@ -36,6 +36,9 @@ public class AuthorizedStaffDTO {
 
     private boolean active;
 
+    @Positive(message = "Supervisor ID must be positive")
+    private Integer supervisorId;
+
 
 
 }

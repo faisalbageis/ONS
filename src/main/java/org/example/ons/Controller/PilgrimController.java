@@ -165,11 +165,10 @@ public class PilgrimController {
 
     @GetMapping("/etPilgrimResponse/{id}")
     public ResponseEntity<?> getPilgrimResponseById(
-            @AuthenticationPrincipal User user,
             @PathVariable Integer id) {
 
         return ResponseEntity.ok(
-                pilgrimService.getPilgrimResponseById(user, id)
+                pilgrimService.getPilgrimResponseById( id)
         );
     }
 }

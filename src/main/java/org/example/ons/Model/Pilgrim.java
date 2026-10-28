@@ -1,6 +1,7 @@
         package org.example.ons.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -42,6 +43,11 @@ public class Pilgrim {
     @JoinColumn(nullable = false)
     @JsonIgnore
     private Campaign campaign;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Integer getCampaignId() {
+        return campaign == null ? null : campaign.getId();
+    }
 
     @ManyToOne
     @JoinColumn

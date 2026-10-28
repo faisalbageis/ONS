@@ -280,6 +280,22 @@ public class AuthorizedStaffService {
                 );
             }
 
+            if (dto.getSupervisorId() == null) {
+                throw new ApiException("Supervisor is required when adding an employee");
+            }
+            supervisor = authorizedStaffRepository
+                    .findAuthorizedStaffById(dto.getSupervisorId());
+            if (supervisor == null
+                    || supervisor.getStaffRole() != AuthorizedStaffRole.SUPERVISOR
+                    || supervisor.getCampaign() == null
+                    || !campaign.getId().equals(supervisor.getCampaign().getId())
+                    || supervisor.getUser() == null
+                    || !supervisor.getUser().isActive()) {
+                throw new AccessDeniedException(
+                        "Select an active supervisor from your campaign"
+                );
+            }
+
         } else if ("AuthorizedStaff".equals(actor.getRole())) {
 
             supervisor = authorizedStaffRepository
@@ -290,6 +306,13 @@ public class AuthorizedStaffService {
                     != AuthorizedStaffRole.SUPERVISOR) {
                 throw new AccessDeniedException(
                         "Only supervisors can add employees"
+                );
+            }
+
+            if (dto.getSupervisorId() != null
+                    && !actor.getId().equals(dto.getSupervisorId())) {
+                throw new AccessDeniedException(
+                        "Supervisors can only add employees to their own team"
                 );
             }
 
@@ -502,6 +525,7 @@ public class AuthorizedStaffService {
 
 
     // قبول حاج ضائع
+    @Transactional
     public void acceptPilgrim(Integer staffId, Integer pilgrimId, long reportId) {
 
     AuthorizedStaff staff = authorizedStaffRepository.findAuthorizedStaffById(staffId);
@@ -544,10 +568,8 @@ public class AuthorizedStaffService {
         if (report.getAuthorizedStaff() != null) {
             throw new ApiException("This report is already assigned");
         }
-        report.setStatus(ReportStatus.ASSIGNED);
         report.setAuthorizedStaff(staff);
-
-        assistanceReportRepository.save(report);
+        updateReportStatus(report, ReportStatus.ASSIGNED);
         notificationService.notifyReportAssigned(
                 report,
                 staff.getUser().getPhoneNumber()
@@ -587,6 +609,7 @@ public class AuthorizedStaffService {
 
 
 
+    @Transactional
     public void advanceReportStatus(Integer staffId, long reportId) {
 
         AuthorizedStaff staff = authorizedStaffRepository.findAuthorizedStaffById(staffId);
